@@ -44,31 +44,31 @@ Additionally, an action to get all results from the file will be provided by the
 the API is implemented using POST methods with a json payload.
 to use it send a POST request at /api/v1/json with the following data:
 
+  * “action” : “all”
+  will provide a full dump of the dictionary
 
-* “action” : “all”
-will provide a full dump of the dictionary
+  * “action” : “search”
+  requires an additional required parameter:
+    * “term” : *the term to be searched*, string
 
-* “action” : “search”
-requires an additional required parameter:
-** “term” : *the term to be searched*, string
+  and some optional parameters:
 
-and some optional parameters:
-**“nresults”: *number of results*, int (default = all if parameter not provided or <= 0)
-**“n_before” : *lines to be quoted before*, int
-**“n_after” : *lines to be quoted after*, int
+    * “nresults”: *number of results*, int (default = all if parameter not provided or <= 0)
+    * “n_before” : *lines to be quoted before*, int
+    * “n_after” : *lines to be quoted after*, int
 
 optional parameter for all actions:
-* “dictionary” : *the filename of the dictionary to be used*, string (default one will be used if parameter not provided)
+  * “dictionary” : *the filename of the dictionary to be used*, string (default one will be used if parameter not provided)
 
 ### API output
 
 Upon successful operation the API will return JSON object with two fields: 
-* "nr of entries" : the number of entries matching the search query
-* "results" : a list of escaped text strings matching the search query
+  * "nr of entries" : the number of entries matching the search query
+  * "results" : a list of escaped text strings matching the search query
 
 In case of error the API will return a JSON object with the following fields: 
-* "Code" : the HTTP status code of error			
-* "message" : a descriptive message of the possible reasons for the error and a link to these instructions
+  * "Code" : the HTTP status code of error			
+  * "message" : a descriptive message of the possible reasons for the error and a link to these instructions
 
 
 ## Web service design & concurrency
