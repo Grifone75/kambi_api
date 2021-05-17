@@ -23,7 +23,7 @@ the underlying service will perform a `grep` in the dictionary files and answer 
 In order to implement this as a lightweight service and due to the requirement to support concurrent calls (potentially blocking) on the IO side several options are available. 
 As a web framework I initially chosed Flask for the simplicity of its setup.
 For the concurrency requirements either multithreading or asyncio.
-Finally, when using flask and asyncio together, an integrated solution exists in the Quart web framework, a flask fork which natively support asyncio.
+Finally, when using flask and **asyncio** together, an integrated solution exists in the **Quart** web framework, a flask fork which natively support asyncio.
 
 
 ## Core function
@@ -101,7 +101,7 @@ This means that at the moment the code will not satisfy the requests still pendi
 ## Testing
 
 A simple tests suite is provided with the code.
-Testing is performed via Pytest. 
+Testing is performed via **pytest**. 
 The module pytest-asyncio allows to test coroutines and a specific fixture is provided by Quart to deploy a test app to which the test client can connect.
 
 I wrote simple test scenarios covering: 
@@ -112,6 +112,12 @@ the core function
 In order to check concurrency vs a blocking call I implemented an undocumented route /wait
 
 which will launch an external process requiring 10 seconds to complete. This allows to check that the server is able to keep serving calls while waiting for the blocking call to be completed.
+
+To run the test simply run: 
+`pytest`
+in the main directory
+
+note: additional testing has been performed using Postman.
 
 ## Deployment
 
