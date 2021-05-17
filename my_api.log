@@ -1,0 +1,8 @@
+2021-05-17 17:35:44,514 - asyncio - DEBUG - Using selector: EpollSelector - [in /usr/lib/python3.8/asyncio/selector_events.py:59]
+2021-05-17 17:35:44,519 - hypercorn.error - INFO - Running on http://127.0.0.1:8000 (CTRL + C to quit) - [in /home/fabrizio/Documents/Code/kambi_test/venv/lib/python3.8/site-packages/hypercorn/logging.py:90]
+2021-05-17 17:36:17,583 - quart.app - INFO - received signal SIGTERM: initiating shutdown in 2... - [in kambi_api.py:169]
+2021-05-17 17:36:19,583 - quart.app - INFO - ...shutting down - [in kambi_api.py:171]
+2021-05-17 17:36:29,257 - asyncio - DEBUG - Using selector: EpollSelector - [in /usr/lib/python3.8/asyncio/selector_events.py:59]
+2021-05-17 17:36:29,265 - hypercorn.error - INFO - Running on http://127.0.0.1:8000 (CTRL + C to quit) - [in /home/fabrizio/Documents/Code/kambi_test/venv/lib/python3.8/site-packages/hypercorn/logging.py:90]
+2021-05-17 17:36:56,103 - quart.app - INFO - received signal SIGTERM: initiating shutdown in 2... - [in kambi_api.py:169]
+2021-05-17 17:36:58,106 - quart.app - INFO - ...shutting down - [in kambi_api.py:171]

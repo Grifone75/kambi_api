@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>KAMBI test API v1 guide</title>
+
+	<style>
+		.indent {margin-left: 5em;}
+
+	</style>
+
+</head>
+
+
+	<body>
+		<h1>Welcome!</h1>
+
+		<h2>this document recap the KAMBI_TEST API</h2>
+
+		<p>The API is meant to be accessed with using POST methods with a JSON payload.</p>
+
+		<h2>Allowed actions are summarized herewith:</h2>
+
+		<p>“action” : “all”</p>
+			<p class="indent">will provide all results in the output</p>
+
+		<p>“action” : “search”</p>
+			<p class="indent">requires an additional required parameter:</p>
+			<p class="indent">“term” : the term to be searched, string</p>
+		<div class="indent">
+			<p>and some optional parameters:</p>
+			<p class="indent">“nresults” : number of results, int (default = all if parameter not provided or <= 0)</p>
+			<p class="indent">“n_before” : lines to be quoted before, int (default = 0 if not provided)</p>
+			<p class="indent">“n_after” : lines to be quoted after, int (default = 0 if not provided)</p>
+		</div>
+		<p>optional parameter for all actions:</p>
+			<p class="indent">“dictionary” : the filename of the dictionary to be used, string (default one will be used if parameter not provided)</p>
+
+
+		<h2>API Output</h2>
+
+		Upon successful operation the API will return JSON object with two fields: 
+			<p class="indent">"nr of entries" : the number of entries matching the search query</p>
+			<p class="indent">"results" : a list of escaped text strings matching the search query</p>
+
+		In cse of error the API will return a JSON object with the following fields: 
+			<p class="indent">"Code" : the HTTP status code of error</p>
+			<p class="indent">"message" : a descriptive message of the possible reasons for the error and a link to these instructions</p>
+
+	</body>
+
+</html>
