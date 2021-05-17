@@ -18,22 +18,13 @@ We want a service answering to an API call to retrieve quotes from a set of dict
 The requester send a search string and some parameters within a json structure
 the underlying service will perform a grep in the dictionary files and answer with either a json structure holding the results or with an error message if not possible (details later)
 
+# Initial analysis
+
 In order to implement this as a lightweight service and due to the requirement to support concurrent calls (potentially blocking) on the IO side several options are available. 
 As a web framework I chose Flask for the simplicity of its setup.
 For the concurrency requirements either multithreading or asyncio.
 Finally, when using flask and asyncio together, an integrated solution exists in the Quart web framework, a flask fork which natively support asyncio.
 
-# Initial analysis
-
-Let’s write a solution for the problem statement above with the following variation : 
-We want a service answering to an API call to retrieve text quotes from a set of dictionary files stored in the file system. 
-The requester send a search string and some parameters within a json structure
-the underlying service will perform a grep in the dictionary files and answer with either a json structure holding the results or with an error message if not possible (details later)
-
-In order to implement this as a lightweight service and due to the requirement to support concurrent calls (potentially blocking) on the IO side several options are available. 
-As a web framework I would chose Flask for the simplicity of its setup.
-For the concurrency requirements either multithreading or asyncio.
-Finally, when using flask and asyncio together, an integrated solution exists in the Quart web framework, a Flask fork which natively support asyncio.
 
 ## Core function
 
