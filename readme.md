@@ -30,12 +30,12 @@ Finally, when using flask and asyncio together, an integrated solution exists in
 
 The core function implements calling grep on a set of files indicated by a specific dictionary name (if nothing is indicated a default one is used), with :
 
->a search term provided 
+* a search term provided 
 
 and some options:
 
->number of lines before and after the quotes to be returned (default = 0)
->number of results to be provided (defaults = all)
+* number of lines before and after the quotes to be returned (default = 0)
+* number of results to be provided (defaults = all)
 	
 Additionally, an action to get all results from the file will be provided by the API.
 
