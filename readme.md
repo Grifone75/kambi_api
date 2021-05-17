@@ -36,7 +36,7 @@ and some options:
 
 * number of lines before and after the quotes to be returned (default = 0)
 * number of results to be provided (defaults = all)
-	
+  
 Additionally, an action to get all results from the file will be provided by the API.
 
 ## API structure
@@ -67,13 +67,14 @@ Upon successful operation the API will return JSON object with two fields:
   * "results" : a list of escaped text strings matching the search query
 
 In case of error the API will return a JSON object with the following fields: 
-  * "Code" : the HTTP status code of error			
+  * "Code" : the HTTP status code of error      
   * "message" : a descriptive message of the possible reasons for the error and a link to these instructions
 
 
 ## Web service design & concurrency
 
 As the core functionality of the service is based on executing an external executable and retrieving its output, I consider the service to be primarily limited in time by IO operations. 
+
 As such the best option to manage concurrency is to use asyncio instead of other options as multithreading.
 
 This drives the choice of the framework to Quart (a asyncio friendly fork of flask). 
@@ -82,9 +83,22 @@ Through Quart all requests will be natively managed by coroutines and the only a
 
 This choice ensures that requests can be accepted and processed concurrently and results are returned as soon as they are ready.
 
-Quart has two running modes, app.run() is a method for development, whilst in production it runs being served by a ASGI web server (Hypercorn) which is distributed with Quart.
+Quart has two running modes :
+* for development one can simply use app.run(), 
+* in production it is optimal to serve the app through a ASGI web server - in the specific case **Hypercorn** which is distributed with Quart.
 
 This second mode is the one implemented in the app.
+
+## Custom HTTP status codes
+I used the web framework's native methods to return specific codes for various errors
+
+ - 400  - if the API keys used are not syntactically correct
+ - 403 - if the external application encountered a problem (usually originated by a file not found or not accessible
+ - 404 - for uncorrect routes
+ - 405 - to signal that the API has been called with a GET method in place of a POST
+ - 500 - for generic server errors
+
+All HTTP errors will be returned also in the JSON body as specified in the API structure.
 
 ## Termination
 
@@ -102,16 +116,16 @@ This means that at the moment the code will not satisfy the requests still pendi
 
 A simple tests suite is provided with the code.
 Testing is performed via **pytest**. 
-The module pytest-asyncio allows to test coroutines and a specific fixture is provided by Quart to deploy a test app to which the test client can connect.
+The module **pytest-asyncio** allows to test coroutines and a specific fixture is provided by Quart to deploy a test app to which the test client can connect.
 
 I wrote simple test scenarios covering: 
-the API endpoints
-the web views
-the core function
 
-In order to check concurrency vs a blocking call I implemented an undocumented route /wait
+ - the API endpoints 
+ - the web views 
+ - the core function
 
-which will launch an external process requiring 10 seconds to complete. This allows to check that the server is able to keep serving calls while waiting for the blocking call to be completed.
+In order to check concurrency vs a blocking call I implemented an undocumented route **/wait** which will launch an external process requiring 10 seconds to complete. 
+This allows to check that the server is able to keep serving calls while waiting for the blocking call to be completed.
 
 To run the test simply run: 
 
@@ -119,11 +133,11 @@ To run the test simply run:
 
 in the main directory
 
-note: additional testing has been performed using Postman.
+note: additional testing has been performed using **Postman**.
 
 ## Deployment
 
-The app requires python 3.7+ and is deployed under a GIT repository at the following address:
+The app requires **python 3.7+** and is deployed under a GIT repository at the following address:
 
 https://github.com/Grifone75/kambi_api
 
