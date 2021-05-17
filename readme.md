@@ -53,9 +53,9 @@ to use it send a POST request at /api/v1/json with the following data:
 
   and some optional parameters:
 
-    * “nresults”: *number of results*, int (default = all if parameter not provided or <= 0)
-    * “n_before” : *lines to be quoted before*, int
-    * “n_after” : *lines to be quoted after*, int
+   * “nresults”: *number of results*, int (default = all if parameter not provided or <= 0)
+   * “n_before” : *lines to be quoted before*, int
+   * “n_after” : *lines to be quoted after*, int
 
 optional parameter for all actions:
   * “dictionary” : *the filename of the dictionary to be used*, string (default one will be used if parameter not provided)
