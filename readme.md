@@ -114,7 +114,9 @@ In order to check concurrency vs a blocking call I implemented an undocumented r
 which will launch an external process requiring 10 seconds to complete. This allows to check that the server is able to keep serving calls while waiting for the blocking call to be completed.
 
 To run the test simply run: 
+
 `pytest`
+
 in the main directory
 
 note: additional testing has been performed using Postman.
