@@ -106,11 +106,14 @@ My strategy to ensure graceful termination was to override the default signal ha
 
 This is done by getting the event loop before starting the app, adding the custom signal handlers, then starting the hypercorn server (which owns the event loop for Quart) passing the event loop modified.
 
-Whilst this technique works, allowing, for example, to add a timeout between the reception of the signal (in my case SIGTERM and SIGINT) and the actual shutdown, or possibly even awaiting all outstanding requests to complete before shutting down, I noticed that the webserver seems to halt the connections immediately.
+I had also to prevent the subprocesses spawned by the external shell calls in the core function to receive the SIGINT or SIGTERM signals in order to have them continuing their job and letting the main application manage the shutdown.
 
-I spent some time studying the source code of Quart to understand the reason of this behaviour - as i suspected that additional signal handlers might be registered by the app -  but in full honestly I haven’t been able to find a satisfactory solution yet.
+I used a simple global flag to indicate the routing functions to answer negatively (with a error 503) after the termination signal has been received.
 
-This means that at the moment the code will not satisfy the requests still pending when a SIGINT or SIGTERM is received. 
+This allows the app to keep processing pending requests and stop receiving new ones during the shutdown time.
+
+Note that a more complex behaviour could have been implemented, actually monitoring that the various outstanding requests are completed before triggering the shutdown, in place of using a simple timer.
+
 
 ## Testing
 

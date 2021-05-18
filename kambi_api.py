@@ -9,6 +9,9 @@ import signal
 from quart.logging import serving_handler
 
 
+#this global mutable object is just a simple way to send a flag to all views when shutting down 
+global_flags = {"shutting_down":False};
+
 #setting up logging
 logging.getLogger('quart.serving').setLevel(logging.INFO)
 logging.getLogger('quart.app').setLevel(logging.INFO)
@@ -17,8 +20,10 @@ logging.basicConfig(level=logging.DEBUG,filename="my_api.log",format="%(asctime)
 #default library path and file for the text to be searched
 LIBRARY_PATH = 'library/'
 DEFAULT_LIBRARY = 'quote_file.txt'
+
 #default timeout for custom shutdown
-TIMEOUT = 10
+TIMEOUT = 15
+
 
 app = Quart(__name__)
 
@@ -31,15 +36,16 @@ app.config['TRAP_HTTP_EXCEPTIONS']=True
 async def wait_function():
 	#add an attribute to signal request
 	asyncio.current_task().outstanding = True
-
+	await asyncio.sleep(10)
 	proc = await asyncio.create_subprocess_shell('./blocking_command.sh',
 		stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE)
+        stderr=asyncio.subprocess.PIPE,
+        stdin=asyncio.subprocess.PIPE) #Note this is to prevent subprocess to receive a SIGINT 
 	print(proc)
 	stdout, stderr = await proc.communicate()
 	print(stdout.decode('utf-8'))
 	return stdout.decode('utf-8')
-
+	#return 'DONE'
 
 #main core function, wrapper around the linux executable we're going to call to serve the requests
 async def core_function_grep(**kwargs):
@@ -56,11 +62,11 @@ async def core_function_grep(**kwargs):
 	proc = await asyncio.create_subprocess_shell(
 			shell_command,
 		stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE)
+        stderr=asyncio.subprocess.PIPE,
+        stdin=asyncio.subprocess.PIPE) #Note this is to prevent subprocess to receive a SIGINT see https://stackoverflow.com/questions/13593223/making-sure-a-python-script-with-subprocesses-dies-on-sigint
 
 	stdout, stderr = await proc.communicate()
-	
-	
+		
 	if proc.returncode == 0:
 		results = stdout.decode('utf-8').split('___')
 		status = 200
@@ -72,7 +78,7 @@ async def core_function_grep(**kwargs):
 		status = 403
 		return results,status
 
-#this can be used to log some detailed information at every request but at the moment is useless
+#this can be used to log some detailed information at every request but at the moment I won't use it
 @app.before_request
 async def log_request_info():
     #logging.getLogger('quart.app').info('Headers: %s', request.headers)
@@ -97,26 +103,21 @@ async def handle_http_error(e):
 
 @app.route('/')
 async def hello():
-	return 'hello'
+	return 'Hello'
 
-
-@app.route('/check')
-async def check():
-	loop = asyncio.get_event_loop()
-	tasks = [t for t in asyncio.all_tasks()]
-	display = ""
-	for t in tasks : 
-		display += t.get_name() + " - " + str(t.get_coro()) + '</br>'
-		if hasattr(t,'outstanding'): display += str(t.outstanding) + '</br>'
-	return display
 
 @app.route('/wait')
 async def wait():
-	#add an attribute to signal request
-	asyncio.current_task().outstanding = True
-	message = await wait_function()
-	return message
+	if not(global_flags['shutting_down']):
+		asyncio.current_task().set_name("FG - wait")
+		#add an attribute to signal request
+		asyncio.current_task().outstanding = True
+		message = await wait_function()
+		return message
+	else:
+		return "shutting down",404		
 
+#route to show instruction page
 @app.route('/api/v1/web')
 async def api_v1_info():
 	return await render_template('api_v1.html')
@@ -125,40 +126,47 @@ async def api_v1_info():
 @app.route('/api/v1/json', methods=['POST'])
 async def api_json():
 
-	parameters = {}
-	api_syntax_error = False
-	request_data = await request.get_json(force=True)
+	if not(global_flags['shutting_down']):
+
+		parameters = {}
+		api_syntax_error = False
+		request_data = await request.get_json(force=True)
+		
+		action = request_data['action']
+		if action == 'all': 
+			parameters['search'] = '$'
+			parameters['nresults'] = None
+
+
+		if action == 'search':
+
+			if request_data.get('term'):
+				parameters['search'] = str(request_data['term'])
+				#optional parameters
+				parameters['dictionary'] = request_data.get('dictionary',DEFAULT_LIBRARY)
+				parameters['nresults'] = request_data.get('nresults',None)
+				parameters['n_before'] = request_data.get('n_before',0)
+				parameters['n_after'] = request_data.get('n_after',0)
+
+			else:
+				api_syntax_error = True
+
+		if api_syntax_error:
+			message = "API keys not recognized"
+			status = 400
+		else: 
+			message, status = await core_function_grep(**parameters)
+
+
+		if status >=400:
+			logging.getLogger('quart.app').error('status '+str(status)+' - message: '+message + ' - headers: ' + str(request.headers))
+
+		return {"nr of entries":len(message),"results":message},status
 	
-	action = request_data['action']
-	if action == 'all': 
-		parameters['search'] = '$'
-		parameters['nresults'] = None
+	else:
 
+		return {'Code' : 503, 'message' : "Server shutting down..."},503
 
-	if action == 'search':
-
-		if request_data.get('term'):
-			parameters['search'] = str(request_data['term'])
-			#optional parameters
-			parameters['dictionary'] = request_data.get('dictionary',DEFAULT_LIBRARY)
-			parameters['nresults'] = request_data.get('nresults',None)
-			parameters['n_before'] = request_data.get('n_before',0)
-			parameters['n_after'] = request_data.get('n_after',0)
-
-		else:
-			api_syntax_error = True
-
-	if api_syntax_error:
-		message = "API keys not recognized"
-		status = 400
-	else: 
-		message, status = await core_function_grep(**parameters)
-
-
-	if status >=400:
-		logging.getLogger('quart.app').error('status '+str(status)+' - message: '+message + ' - headers: ' + str(request.headers))
-
-	return {"nr of entries":len(message),"results":message},status
 
 #route for the json api with wrong methods (i only put GET at the moment)
 @app.route('/api/v1/json', methods=['GET'])
@@ -168,12 +176,15 @@ async def api_json_wrong_methods():
 
 # ------ END ROUTES ------------------------------------
 
+
+
 # definition of events and handler for a graceful shutdown
 shutdown_event = asyncio.Event()
 
 async def ask_exit(signame):
 	
 	logging.getLogger('quart.app').info("received signal {}: initiating shutdown in {}...".format(signame,TIMEOUT))
+	global_flags['shutting_down'] = True #switches routes to denial message
 	await asyncio.sleep(TIMEOUT)
 	logging.getLogger('quart.app').info("...shutting down")
 	shutdown_event.set()
